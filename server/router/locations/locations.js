@@ -47,12 +47,11 @@ async function getLocations(req, res) {
 
     const dataFromServer = await connection.execute(sql);
 
-    // console.log(dataFromServer);
     
 
     return res.json({
         status: 'success',
-        data: data,
+        data: dataFromServer[0],
     });
 
 }
