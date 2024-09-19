@@ -1,4 +1,6 @@
 /* eslint-disable react/prop-types */
+
+
 export function LocationCard({ img, name, address }) {
     return (
         <div className="col">
