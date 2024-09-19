@@ -25,5 +25,5 @@ setInterval(async () => {
     } else {
         console.log('conn: ok');
     }
-}, 5000);
+}, 50000);
 
