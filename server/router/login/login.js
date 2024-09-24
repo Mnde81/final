@@ -1,8 +1,7 @@
+import express from 'express';
 import { connection } from '../../db.js';
-import express from 'express'
-import { isValidPassword, isValidUsername } from '../../lib/isValid.js';
 import { env } from '../../env.js';
-
+import { isValidPassword, isValidUsername } from '../../lib/isValid.js';
 
 const tokenLength = 20;
 
@@ -18,12 +17,11 @@ loginAPIrouter.use((req, res) => {
     });
 });
 
-
-async function getLogin(req, res) { 
-
-
+async function getLogin(req, res) {
     return res.json({
         isLoggedIn: req.user.isLoggedIn,
+        role: req.user.role,
+        username: req.user.username,
     });
 }
 
@@ -65,6 +63,10 @@ async function postLogin(req, res) {
         });
     }
 
+    // 1) isitikiname, jog yra tik 1 toks {username, password} variantas (user'is)
+    // 2) sugeneruojame RANDOM string
+    // 3) ji isirasome i DB (nauja lentele)
+    // 4) ji atiduodame i userio narsykle ir irasome i narsykles coockies
 
     let userData = null;
 
@@ -72,24 +74,19 @@ async function postLogin(req, res) {
         const sql = 'SELECT * FROM users WHERE username = ? AND password = ?;';
         const result = await connection.execute(sql, [username, password]);
 
-        
-        
         if (result[0].length !== 1) {
             return res.json({
                 status: 'error',
-                msg: 'Kilo problemu su vartotojo paskyra, susisiekite su client-supportu',
+                msg: 'Kilo problemo su vartotojo paskyra, susisiekite su client-supportu',
             });
-
         }
-        
-        userData = result[0][0];
 
+        userData = result[0][0];
     } catch (error) {
         return res.json({
             status: 'error',
             msg: 'Del techniniu kliuciu nepavyko ivykdyti prisijungimo proceso, pabandykite veliau',
         });
-
     }
 
     const abc = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -98,7 +95,6 @@ async function postLogin(req, res) {
     for (let i = 0; i < tokenLength; i++) {
         token += abc[Math.floor(Math.random() * abc.length)];
     }
-
 
     try {
         const sql = 'INSERT INTO tokens (token, user_id) VALUES (?, ?);';
@@ -119,19 +115,21 @@ async function postLogin(req, res) {
 
     const cookie = [
         'loginToken=' + token,
-        'path=/',
         'domain=localhost',
+        'path=/',
         'max-age=' + env.COOKIE_MAX_AGE,
         // 'Secure',
         'SameSite=Lax',
         'HttpOnly',
-
     ];
 
     return res
-    .set('Set-Cookie', cookie.join('; '))
-    .json({
-        status: 'success',
-        msg: 'Buvo sekmingai prisijungta',
-    });
+        .set('Set-Cookie', cookie.join('; '))
+        .json({
+            status: 'success',
+            msg: 'Buvo sekmingai prisijungta',
+            isLoggedIn: true,
+            username: userData.username,
+            role: userData.role,
+        });
 }

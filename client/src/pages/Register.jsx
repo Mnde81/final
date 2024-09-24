@@ -3,14 +3,18 @@ import { Footer } from "../components/footer/Footer";
 import { Header } from "../components/header/Header";
 
 export function Register() {
+    const { VITE_MODE, VITE_USERNAME, VITE_PASSWORD } = import.meta.env;
+    const initialUsername = VITE_MODE === 'dev' ? (VITE_USERNAME ?? 'admin') : '';
+    const initialPassword = VITE_MODE === 'dev' ? (VITE_PASSWORD ?? 'adminadminadmin') : '';
+
     const minUsernameLength = 3;
     const maxUsernameLength = 20;
     const minPasswordLength = 12;
     const maxPasswordLength = 100;
 
-    const [username, setUsername] = useState('');
+    const [username, setUsername] = useState(initialUsername);
     const [usernameError, setUsernameError] = useState('');
-    const [password, setPassword] = useState('');
+    const [password, setPassword] = useState(initialPassword);
     const [passwordError, setPasswordError] = useState('');
     const [isFormValidated, setIsFormValidated] = useState(false);
     const [apiResponse, setApiResponse] = useState(null);
@@ -47,9 +51,9 @@ export function Register() {
                     password,
                 }),
             })
-            .then(res => res.json())
-            .then(data => setApiResponse(data))
-            .catch(err => console.error(err));
+                .then(res => res.json())
+                .then(data => setApiResponse(data))
+                .catch(err => console.error(err));
         }
     }
 
@@ -60,8 +64,9 @@ export function Register() {
                 <div className="row">
                     <form onSubmit={submitForm} className="col-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
                         <h1 className="h3 mb-3 fw-normal">Registracija</h1>
-                        {apiResponse && apiResponse.status === 'success' ? <p className="alert alert-success" >{apiResponse.msg}</p> : null}
-                        {apiResponse && apiResponse.status === 'error' ? <p className="alert alert-danger" >{apiResponse.msg}</p> : null}
+
+                        {apiResponse && apiResponse.status === 'success' ? <p className="alert alert-success">{apiResponse.msg}</p> : null}
+                        {apiResponse && apiResponse.status === 'error' ? <p className="alert alert-danger">{apiResponse.msg}</p> : null}
 
                         <div className="form-floating">
                             <input value={username} onChange={e => setUsername(e.target.value.trim())}
@@ -75,7 +80,7 @@ export function Register() {
                             <input value={password} onChange={e => setPassword(e.target.value)}
                                 type="password" id="password" placeholder="Password"
                                 className={'form-control ' + (isFormValidated ? passwordError ? 'is-invalid' : 'is-valid' : '')} />
-                            <label htmlFor="password">Spaltažodis</label>
+                            <label htmlFor="password">Spalvažodis</label>
                             {passwordError && <p className="invalid-feedback">{passwordError}</p>}
                         </div>
 
