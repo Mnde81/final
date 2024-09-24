@@ -1,6 +1,7 @@
 import { connection } from '../../db.js';
 import express from 'express'
 import { isValidPassword, isValidUsername } from '../../lib/isValid.js';
+import { env } from '../../env.js';
 
 
 const tokenLength = 20;
@@ -18,17 +19,11 @@ loginAPIrouter.use((req, res) => {
 });
 
 
-async function getLogin(req, res) {
-    const cookies = req.headers.cookie.split(';').map(s => s.trim().split('='))
-    .reduce((total, item) => ({...total, [item[0]]: item[1]}), {});
-
-    console.log(cookies.loginToken);
-    
-
+async function getLogin(req, res) { 
 
 
     return res.json({
-        isLoggedIn: true,
+        isLoggedIn: req.user.isLoggedIn,
     });
 }
 
@@ -126,7 +121,7 @@ async function postLogin(req, res) {
         'loginToken=' + token,
         'path=/',
         'domain=localhost',
-        'max-age=3600',
+        'max-age=' + env.COOKIE_MAX_AGE,
         // 'Secure',
         'SameSite=Lax',
         'HttpOnly',
