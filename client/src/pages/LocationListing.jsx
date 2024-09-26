@@ -1,22 +1,36 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Footer } from "../components/footer/Footer";
 import { Header } from "../components/header/Header";
-import { LocationCard } from "../components/locations/LocationCard";
+import { PublicLocationsList } from "../components/locations/PublicLocationsList";
+import { AdminLocationsList } from "../components/locations/AdminLocationsList";
+import { GlobalContext } from "../context/GlobalContext";
 
 export function LocationListing() {
-    
+    const { role } = useContext(GlobalContext);
     const [locations, setLocations] = useState([]);
 
     useEffect(() => {
         fetch('http://localhost:5020/api/locations')
-        .then(res => res.json())
-        .then(obj => setLocations(obj.data))
-        .catch(err => {
-            console.error(err)
-        });
+            .then(res => res.json())
+            .then(obj => {
+                if (typeof obj !== 'object') {
+                    throw new Error('Is serverio atejo ne objektas');
+                } else {
+                    setLocations(obj.data);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+            });
     }, []);
 
-    
+    let list = null;
+
+    if (role === 'admin') {
+        list = <AdminLocationsList locations={locations} />;
+    } else {
+        list = <PublicLocationsList locations={locations} />;
+    }
 
     return (
         <>
@@ -30,11 +44,7 @@ export function LocationListing() {
                         </div>
                     </div>
                 </div>
-                <div className="container px-4 py-5">
-                    <div className="row row-cols-1 row-cols-lg-3 align-items-stretch g-4 py-5">
-                        {locations.map((location, index) => <LocationCard key={index} {...location} />)}
-                    </div>
-                </div>
+                {list}
             </main>
             <Footer />
         </>
